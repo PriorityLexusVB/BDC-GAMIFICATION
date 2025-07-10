@@ -17,8 +17,10 @@ import {
   Target,
   Flame,
   Sparkles,
+  Palette,
 } from "lucide-react"
 import type * as THREE from "three"
+import GarageEnvironmentSelector from "@/components/garage-environment-selector"
 
 // Types
 interface Car {
@@ -198,7 +200,7 @@ function ProgressRing({ progress, size = 80, strokeWidth = 8, color = "#00ffff" 
 }
 
 export default function LuxuryCarGarage() {
-  const [currentScreen, setCurrentScreen] = useState<"garage" | "shop" | "achievements">("garage")
+  const [currentScreen, setCurrentScreen] = useState<"garage" | "shop" | "achievements" | "environments">("garage")
   const [selectedCar, setSelectedCar] = useState(0)
   const [cartItems, setCartItems] = useState<string[]>([])
 
@@ -721,6 +723,7 @@ export default function LuxuryCarGarage() {
               { key: "garage", label: "Garage", icon: Settings },
               { key: "shop", label: "Shop", icon: ShoppingCart },
               { key: "achievements", label: "Achievements", icon: Trophy },
+              { key: "environments", label: "Environments", icon: Palette },
             ].map((item) => (
               <motion.button
                 key={item.key}
@@ -753,6 +756,7 @@ export default function LuxuryCarGarage() {
           {currentScreen === "garage" && <GarageView />}
           {currentScreen === "shop" && <ShopView />}
           {currentScreen === "achievements" && <AchievementsView />}
+          {currentScreen === "environments" && <GarageEnvironmentSelector />}
         </motion.div>
       </AnimatePresence>
 
@@ -763,8 +767,8 @@ export default function LuxuryCarGarage() {
             key={i}
             className="absolute w-1 h-1 bg-cyan-400 rounded-full opacity-60"
             animate={{
-              x: [0, Math.random() * window.innerWidth],
-              y: [0, Math.random() * window.innerHeight],
+              x: [0, Math.random() * (typeof window !== "undefined" ? window.innerWidth : 1920)],
+              y: [0, Math.random() * (typeof window !== "undefined" ? window.innerHeight : 1080)],
             }}
             transition={{
               duration: Math.random() * 10 + 10,
@@ -772,8 +776,8 @@ export default function LuxuryCarGarage() {
               repeatType: "reverse",
             }}
             style={{
-              left: Math.random() * window.innerWidth,
-              top: Math.random() * window.innerHeight,
+              left: Math.random() * (typeof window !== "undefined" ? window.innerWidth : 1920),
+              top: Math.random() * (typeof window !== "undefined" ? window.innerHeight : 1080),
             }}
           />
         ))}
