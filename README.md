@@ -1,30 +1,40 @@
-# Luxury car game interface
+# BDC Dream Garage 🏎️
 
-*Automatically synced with your [v0.dev](https://v0.dev) deployments*
+A luxury automotive gamification app for BDC (Business Development Center) teams, featuring Need for Speed Heat-inspired aesthetics.
 
-[![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://vercel.com/robs-projects-98a6166f/v0-luxury-car-game-interface)
-[![Built with v0](https://img.shields.io/badge/Built%20with-v0.dev-black?style=for-the-badge)](https://v0.dev/chat/projects/i45MziXc8x2)
+## 🚀 Features
 
-## Overview
+- **Points System** - Earn points for calls, appointments, and achievements
+- **Live Leaderboard** - Real-time team rankings with daily/weekly/monthly views
+- **Trophy Room** - Unlock achievements with different rarity levels
+- **Dream Garage** - Collect luxury cars and customize your garage
+- **Shop System** - Purchase cars, themes, and power-ups
+- **Admin Panel** - Hidden admin controls (triple-click logo)
 
-This repository will stay in sync with your deployed chats on [v0.dev](https://v0.dev).
-Any changes you make to your deployed app will be automatically pushed to this repository from [v0.dev](https://v0.dev).
+## 🛠️ Tech Stack
 
-## Deployment
+- **Next.js 14** - React framework
+- **TypeScript** - Type safety
+- **Tailwind CSS** - Styling
+- **Framer Motion** - Animations
+- **shadcn/ui** - UI components
+- **Sonner** - Toast notifications
 
-Your project is live at:
+## 📦 Installation
 
-**[https://vercel.com/robs-projects-98a6166f/v0-luxury-car-game-interface](https://vercel.com/robs-projects-98a6166f/v0-luxury-car-game-interface)**
+```bash
+# Clone the repository
+git clone https://github.com/YOUR-USERNAME/bdc-dream-garage.git
 
-## Build your app
+# Navigate to project
+cd bdc-dream-garage
 
-Continue building your app on:
+# Install dependencies
+npm install
+# or
+pnpm install
 
-**[https://v0.dev/chat/projects/i45MziXc8x2](https://v0.dev/chat/projects/i45MziXc8x2)**
-
-## How It Works
-
-1. Create and modify your project using [v0.dev](https://v0.dev)
-2. Deploy your chats from the v0 interface
-3. Changes are automatically pushed to this repository
-4. Vercel deploys the latest version from this repository
+# Run development server
+npm run dev
+# or
+pnpm dev
