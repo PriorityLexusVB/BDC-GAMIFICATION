@@ -1,0 +1,1052 @@
+'use client'
+
+import React, { useState, useEffect } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { 
+  Trophy, 
+  Phone, 
+  Calendar, 
+  Flame, 
+  Zap, 
+  Car, 
+  Home,
+  ShoppingBag,
+  Settings,
+  X,
+  Check,
+  Star,
+  TrendingUp,
+  Users,
+  Target,
+  Award
+} from 'lucide-react'
+import { Card } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Progress } from '@/components/ui/progress'
+import { Badge } from '@/components/ui/badge'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { toast } from 'sonner'
+
+// Types
+interface User {
+  name: string
+  points: number
+  calls: number
+  appointments: number
+  streak: number
+  avatar: string
+}
+
+interface GameState {
+  currentUser: string
+  users: Record<string, User>
+  powerHour: boolean
+  teamBonus: boolean
+  ownedItems: string[]
+  currentCar: string
+  currentTheme: string
+  currentUnderglow: string
+}
+
+interface Car {
+  id: string
+  name: string
+  price: number
+  image: string
+  stats: {
+    style: number
+    speed: number
+    luxury: number
+  }
+  locked: boolean
+}
+
+interface Achievement {
+  id: string
+  name: string
+  description: string
+  icon: React.ReactNode
+  progress: number
+  unlocked: boolean
+  rarity: 'common' | 'rare' | 'epic' | 'legendary'
+  points: number
+}
+
+// Mock Data
+const CARS: Car[] = [
+  {
+    id: 'lexus-is',
+    name: 'Lexus IS 350 F Sport',
+    price: 0,
+    image: 'https://images.unsplash.com/photo-1616422285623-13ff0162193c?w=800&h=600&fit=crop',
+    stats: { style: 4, speed: 5, luxury: 4 },
+    locked: false
+  },
+  {
+    id: 'lexus-rx',
+    name: 'Lexus RX 450h',
+    price: 0,
+    image: 'https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?w=800&h=600&fit=crop',
+    stats: { style: 5, speed: 3, luxury: 5 },
+    locked: false
+  },
+  {
+    id: 'lamborghini',
+    name: 'Lamborghini Aventador',
+    price: 10000,
+    image: 'https://images.unsplash.com/photo-1621135802920-133df287f89c?w=800&h=600&fit=crop',
+    stats: { style: 5, speed: 5, luxury: 4 },
+    locked: true
+  },
+  {
+    id: 'ferrari',
+    name: 'Ferrari 488 GTB',
+    price: 15000,
+    image: 'https://images.unsplash.com/photo-1592198084033-aade902d1aae?w=800&h=600&fit=crop',
+    stats: { style: 5, speed: 5, luxury: 5 },
+    locked: true
+  },
+  {
+    id: 'porsche',
+    name: 'Porsche 911 Turbo S',
+    price: 12500,
+    image: 'https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?w=800&h=600&fit=crop',
+    stats: { style: 5, speed: 5, luxury: 5 },
+    locked: true
+  },
+  {
+    id: 'lexus-lc',
+    name: 'Lexus LC 500',
+    price: 8000,
+    image: 'https://images.unsplash.com/photo-1632245889029-e406faaa34cd?w=800&h=600&fit=crop',
+    stats: { style: 5, speed: 4, luxury: 5 },
+    locked: true
+  }
+]
+
+const GARAGE_THEMES = [
+  { id: 'underground', name: 'Underground', image: 'https://images.unsplash.com/photo-1570824104453-508955ab713e?w=1200&h=800&fit=crop' },
+  { id: 'penthouse', name: 'Penthouse', image: 'https://images.unsplash.com/photo-1580137189272-c9379f8864fd?w=1200&h=800&fit=crop' },
+  { id: 'cyber', name: 'Cyber', image: 'https://images.unsplash.com/photo-1619317000134-7a3fb7aa9663?w=1200&h=800&fit=crop' },
+  { id: 'classic', name: 'Classic', image: 'https://images.unsplash.com/photo-1486006920555-c77dcf18193c?w=1200&h=800&fit=crop' }
+]
+
+const UNDERGLOW_COLORS = [
+  { id: 'purple', color: '#7847ea' },
+  { id: 'blue', color: '#00d4ff' },
+  { id: 'green', color: '#00ff88' },
+  { id: 'red', color: '#ff0055' },
+  { id: 'orange', color: '#ffaa00' },
+  { id: 'rainbow', color: 'rainbow' }
+]
+
+export default function BDCDreamGarage() {
+  const [gameState, setGameState] = useState<GameState>({
+    currentUser: 'sarah',
+    users: {
+      sarah: { 
+        name: 'Sarah M.', 
+        points: 12345, 
+        calls: 15, 
+        appointments: 8, 
+        streak: 3,
+        avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&h=200&fit=crop'
+      },
+      jessica: { 
+        name: 'Jessica L.', 
+        points: 11875, 
+        calls: 12, 
+        appointments: 6, 
+        streak: 1,
+        avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&h=200&fit=crop'
+      },
+      emily: { 
+        name: 'Emily R.', 
+        points: 10650, 
+        calls: 10, 
+        appointments: 5, 
+        streak: 0,
+        avatar: 'https://images.unsplash.com/photo-1489424731084-a5d8b219a5bb?w=200&h=200&fit=crop'
+      }
+    },
+    powerHour: false,
+    teamBonus: false,
+    ownedItems: ['lexus-is', 'lexus-rx'],
+    currentCar: 'lexus-is',
+    currentTheme: 'underground',
+    currentUnderglow: 'purple'
+  })
+
+  const [activeSection, setActiveSection] = useState('dashboard')
+  const [showAdminPanel, setShowAdminPanel] = useState(false)
+  const [logoClickCount, setLogoClickCount] = useState(0)
+  const [activeCall, setActiveCall] = useState(false)
+  const [callTime, setCallTime] = useState(0)
+  const [combo, setCombo] = useState(0)
+
+  // Load state from localStorage
+  useEffect(() => {
+    const savedState = localStorage.getItem('bdcGarageState')
+    if (savedState) {
+      setGameState(JSON.parse(savedState))
+    }
+  }, [])
+
+  // Save state to localStorage
+  useEffect(() => {
+    localStorage.setItem('bdcGarageState', JSON.stringify(gameState))
+  }, [gameState])
+
+  // Call timer
+  useEffect(() => {
+    let interval: NodeJS.Timeout
+    if (activeCall) {
+      interval = setInterval(() => {
+        setCallTime(prev => prev + 1)
+      }, 1000)
+    }
+    return () => clearInterval(interval)
+  }, [activeCall])
+
+  // Handle logo clicks for admin panel
+  const handleLogoClick = () => {
+    setLogoClickCount(prev => prev + 1)
+    if (logoClickCount === 2) {
+      setShowAdminPanel(true)
+      setLogoClickCount(0)
+    }
+    setTimeout(() => setLogoClickCount(0), 1000)
+  }
+
+  // Add points with multipliers
+  const addPoints = (basePoints: number, message: string) => {
+    let points = basePoints
+    
+    // Apply multipliers
+    if (gameState.powerHour) points *= 2
+    if (gameState.teamBonus) points *= 1.5
+    if (combo > 1) points *= combo
+    
+    points = Math.round(points)
+    
+    setGameState(prev => ({
+      ...prev,
+      users: {
+        ...prev.users,
+        [prev.currentUser]: {
+          ...prev.users[prev.currentUser],
+          points: prev.users[prev.currentUser].points + points
+        }
+      }
+    }))
+    
+    toast.success(`+${points} ${message}`, {
+      duration: 2000,
+      position: 'top-center'
+    })
+    
+    // Update combo
+    setCombo(prev => prev + 1)
+    setTimeout(() => setCombo(0), 5000)
+  }
+
+  // Simulate call
+  const startCall = () => {
+    setActiveCall(true)
+    setCallTime(0)
+  }
+
+  const endCall = (withAppointment: boolean = false) => {
+    setActiveCall(false)
+    
+    const basePoints = 15
+    addPoints(basePoints, 'CALL COMPLETED!')
+    
+    if (callTime < 30) {
+      addPoints(25, 'FAST RESPONSE!')
+    }
+    
+    if (withAppointment) {
+      addPoints(50, 'APPOINTMENT SET!')
+      setGameState(prev => ({
+        ...prev,
+        users: {
+          ...prev.users,
+          [prev.currentUser]: {
+            ...prev.users[prev.currentUser],
+            appointments: prev.users[prev.currentUser].appointments + 1
+          }
+        }
+      }))
+    }
+    
+    setGameState(prev => ({
+      ...prev,
+      users: {
+        ...prev.users,
+        [prev.currentUser]: {
+          ...prev.users[prev.currentUser],
+          calls: prev.users[prev.currentUser].calls + 1
+        }
+      }
+    }))
+  }
+
+  // Purchase item
+  const purchaseItem = (price: number, itemId: string) => {
+    const currentPoints = gameState.users[gameState.currentUser].points
+    
+    if (currentPoints >= price) {
+      setGameState(prev => ({
+        ...prev,
+        users: {
+          ...prev.users,
+          [prev.currentUser]: {
+            ...prev.users[prev.currentUser],
+            points: prev.users[prev.currentUser].points - price
+          }
+        },
+        ownedItems: [...prev.ownedItems, itemId]
+      }))
+      
+      toast.success('Purchase successful!')
+    } else {
+      toast.error('Not enough points!')
+    }
+  }
+
+  const currentUser = gameState.users[gameState.currentUser]
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-purple-950/20 to-gray-950 text-white">
+      {/* Animated Background */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%237847ea" fill-opacity="0.03"%3E%3Cpath d="M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-20"></div>
+      </div>
+
+      {/* Header */}
+      <header className="relative z-10 border-b border-purple-900/30 backdrop-blur-sm bg-black/30">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+          <h1 
+            className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent cursor-pointer"
+            onClick={handleLogoClick}
+          >
+            BDC DREAM GARAGE
+          </h1>
+          <div className="flex items-center gap-4">
+            <div className="text-right">
+              <div className="text-sm text-gray-400">Current Points</div>
+              <div className="text-2xl font-bold text-purple-400">
+                {currentUser.points.toLocaleString()}
+              </div>
+            </div>
+            <img 
+              src={currentUser.avatar} 
+              alt={currentUser.name}
+              className="w-12 h-12 rounded-full border-2 border-purple-500"
+            />
+          </div>
+        </div>
+      </header>
+
+      {/* Navigation */}
+      <nav className="sticky top-0 z-20 bg-black/50 backdrop-blur-md border-b border-purple-900/30">
+        <div className="container mx-auto px-4">
+          <div className="flex space-x-1 overflow-x-auto py-2">
+            {[
+              { id: 'dashboard', label: 'Dashboard', icon: <Home className="w-4 h-4" /> },
+              { id: 'leaderboard', label: 'Leaderboard', icon: <Trophy className="w-4 h-4" /> },
+              { id: 'achievements', label: 'Achievements', icon: <Award className="w-4 h-4" /> },
+              { id: 'garage', label: 'Garage', icon: <Car className="w-4 h-4" /> },
+              { id: 'shop', label: 'Shop', icon: <ShoppingBag className="w-4 h-4" /> }
+            ].map(tab => (
+              <Button
+                key={tab.id}
+                variant={activeSection === tab.id ? "default" : "ghost"}
+                onClick={() => setActiveSection(tab.id)}
+                className="flex items-center gap-2"
+              >
+                {tab.icon}
+                <span className="hidden sm:inline">{tab.label}</span>
+              </Button>
+            ))}
+          </div>
+        </div>
+      </nav>
+
+      {/* Main Content */}
+      <main className="container mx-auto px-4 py-8 relative z-10">
+        <AnimatePresence mode="wait">
+          {activeSection === 'dashboard' && <DashboardSection gameState={gameState} activeCall={activeCall} callTime={callTime} startCall={startCall} endCall={endCall} />}
+          {activeSection === 'leaderboard' && <LeaderboardSection gameState={gameState} />}
+          {activeSection === 'achievements' && <AchievementsSection />}
+          {activeSection === 'garage' && <GarageSection gameState={gameState} setGameState={setGameState} />}
+          {activeSection === 'shop' && <ShopSection gameState={gameState} purchaseItem={purchaseItem} />}
+        </AnimatePresence>
+      </main>
+
+      {/* Admin Panel */}
+      <AnimatePresence>
+        {showAdminPanel && (
+          <AdminPanel 
+            gameState={gameState} 
+            setGameState={setGameState} 
+            onClose={() => setShowAdminPanel(false)} 
+            addPoints={addPoints}
+          />
+        )}
+      </AnimatePresence>
+    </div>
+  )
+}
+
+// Dashboard Section Component
+function DashboardSection({ gameState, activeCall, callTime, startCall, endCall }: any) {
+  const currentUser = gameState.users[gameState.currentUser]
+  
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      className="space-y-8"
+    >
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <Card className="bg-black/50 border-purple-900/30 backdrop-blur-sm">
+          <div className="p-6">
+            <div className="flex items-center justify-between mb-2">
+              <Phone className="w-8 h-8 text-purple-400" />
+              <Badge variant="secondary">{currentUser.calls}/20</Badge>
+            </div>
+            <h3 className="text-lg font-semibold mb-1">Today's Calls</h3>
+            <Progress value={(currentUser.calls / 20) * 100} className="h-2" />
+          </div>
+        </Card>
+
+        <Card className="bg-black/50 border-purple-900/30 backdrop-blur-sm">
+          <div className="p-6">
+            <div className="flex items-center justify-between mb-2">
+              <Calendar className="w-8 h-8 text-blue-400" />
+              <Badge variant="secondary">{currentUser.appointments}/10</Badge>
+            </div>
+            <h3 className="text-lg font-semibold mb-1">Appointments</h3>
+            <Progress value={(currentUser.appointments / 10) * 100} className="h-2" />
+          </div>
+        </Card>
+
+        <Card className="bg-black/50 border-purple-900/30 backdrop-blur-sm">
+          <div className="p-6">
+            <div className="flex items-center justify-between mb-2">
+              <Flame className="w-8 h-8 text-orange-400" />
+              <Badge variant="secondary">{currentUser.streak} days</Badge>
+            </div>
+            <h3 className="text-lg font-semibold mb-1">Current Streak</h3>
+            <div className="flex gap-1 mt-2">
+              {[...Array(7)].map((_, i) => (
+                <div
+                  key={i}
+                  className={`h-2 flex-1 rounded ${
+                    i < currentUser.streak ? 'bg-orange-400' : 'bg-gray-700'
+                  }`}
+                />
+              ))}
+            </div>
+          </div>
+        </Card>
+
+        {gameState.powerHour && (
+          <Card className="bg-gradient-to-br from-purple-900/50 to-blue-900/50 border-purple-400 backdrop-blur-sm animate-pulse">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-2">
+                <Zap className="w-8 h-8 text-yellow-400" />
+                <Badge className="bg-yellow-400 text-black">ACTIVE</Badge>
+              </div>
+              <h3 className="text-lg font-semibold">Power Hour</h3>
+              <p className="text-sm text-gray-300">2X Points Active!</p>
+            </div>
+          </Card>
+        )}
+      </div>
+
+      {/* Live Call Widget */}
+      {activeCall && (
+        <Card className="bg-gradient-to-br from-purple-900/30 to-blue-900/30 border-purple-400 backdrop-blur-sm">
+          <div className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-bold flex items-center gap-2">
+                <Phone className="w-6 h-6 text-green-400 animate-pulse" />
+                Live Call
+              </h3>
+              <div className="text-3xl font-mono">
+                {Math.floor(callTime / 60)}:{(callTime % 60).toString().padStart(2, '0')}
+              </div>
+            </div>
+            <div className="flex gap-4">
+              <Button 
+                onClick={() => endCall(true)}
+                className="flex-1 bg-green-600 hover:bg-green-700"
+              >
+                <Calendar className="w-4 h-4 mr-2" />
+                Set Appointment
+              </Button>
+              <Button 
+                onClick={() => endCall(false)}
+                variant="secondary"
+                className="flex-1"
+              >
+                End Call
+              </Button>
+            </div>
+          </div>
+        </Card>
+      )}
+
+      {/* Daily Challenges */}
+      <div>
+        <h2 className="text-2xl font-bold mb-4">Daily Challenges</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {[
+            { name: 'Lightning Response', desc: 'Answer 5 calls < 30s', progress: 60, reward: 100 },
+            { name: 'Appointment Master', desc: 'Set 3 appointments before noon', progress: 33, reward: 250 },
+            { name: 'Team Goal', desc: 'Help team reach 50 actions', progress: 75, reward: 500 },
+            { name: 'Hot Streak', desc: '5 successful calls in a row', progress: 40, reward: 300 }
+          ].map((challenge, i) => (
+            <Card key={i} className="bg-black/50 border-purple-900/30 backdrop-blur-sm">
+              <div className="p-4">
+                <div className="flex justify-between items-start mb-2">
+                  <div>
+                    <h4 className="font-semibold">{challenge.name}</h4>
+                    <p className="text-sm text-gray-400">{challenge.desc}</p>
+                  </div>
+                  <Badge variant="secondary">+{challenge.reward} pts</Badge>
+                </div>
+                <Progress value={challenge.progress} className="h-2 mt-3" />
+              </div>
+            </Card>
+          ))}
+        </div>
+      </div>
+
+      {/* Quick Actions */}
+      {!activeCall && (
+        <div className="flex justify-center">
+          <Button 
+            onClick={startCall}
+            size="lg"
+            className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+          >
+            <Phone className="w-5 h-5 mr-2" />
+            Start Call Simulation
+          </Button>
+        </div>
+      )}
+    </motion.div>
+  )
+}
+
+// Leaderboard Section
+function LeaderboardSection({ gameState }: { gameState: GameState }) {
+  const [timeframe, setTimeframe] = useState('today')
+  
+  const sortedUsers = Object.entries(gameState.users)
+    .sort(([, a], [, b]) => b.points - a.points)
+    .map(([id, user], index) => ({ id, ...user, rank: index + 1 }))
+  
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      className="space-y-6"
+    >
+      <div className="flex justify-between items-center">
+        <h2 className="text-3xl font-bold">Leaderboard</h2>
+        <Tabs value={timeframe} onValueChange={setTimeframe}>
+          <TabsList>
+            <TabsTrigger value="today">Today</TabsTrigger>
+            <TabsTrigger value="week">This Week</TabsTrigger>
+            <TabsTrigger value="month">This Month</TabsTrigger>
+          </TabsList>
+        </Tabs>
+      </div>
+
+      <div className="space-y-4">
+        {sortedUsers.map((user) => (
+          <Card 
+            key={user.id}
+            className={`bg-black/50 border-purple-900/30 backdrop-blur-sm transition-all hover:scale-[1.02] ${
+              user.rank === 1 ? 'ring-2 ring-yellow-500' : ''
+            }`}
+          >
+            <div className="p-6 flex items-center gap-4">
+              <div className={`text-4xl font-bold ${
+                user.rank === 1 ? 'text-yellow-500' :
+                user.rank === 2 ? 'text-gray-400' :
+                user.rank === 3 ? 'text-orange-600' :
+                'text-gray-600'
+              }`}>
+                #{user.rank}
+              </div>
+              <img 
+                src={user.avatar} 
+                alt={user.name}
+                className="w-16 h-16 rounded-full border-2 border-purple-500"
+              />
+              <div className="flex-1">
+                <h3 className="text-xl font-semibold flex items-center gap-2">
+                  {user.name}
+                  {user.streak >= 3 && <Flame className="w-5 h-5 text-orange-500" />}
+                </h3>
+                <p className="text-gray-400">
+                  {user.calls} calls • {user.appointments} appointments
+                </p>
+              </div>
+              <div className="text-right">
+                <div className="text-3xl font-bold text-purple-400">
+                  {user.points.toLocaleString()}
+                </div>
+                <div className="text-sm text-gray-500">points</div>
+              </div>
+            </div>
+          </Card>
+        ))}
+      </div>
+    </motion.div>
+  )
+}
+
+// Achievements Section
+function AchievementsSection() {
+  const achievements: Achievement[] = [
+    {
+      id: 'speed-demon',
+      name: 'Speed Demon',
+      description: 'Answer 10 calls in under 30 seconds',
+      icon: <Zap className="w-8 h-8" />,
+      progress: 100,
+      unlocked: true,
+      rarity: 'rare',
+      points: 250
+    },
+    {
+      id: 'appointment-master',
+      name: 'Appointment Master',
+      description: 'Set 10 appointments in one day',
+      icon: <Calendar className="w-8 h-8" />,
+      progress: 100,
+      unlocked: true,
+      rarity: 'epic',
+      points: 500
+    },
+    {
+      id: 'team-player',
+      name: 'Team Player',
+      description: 'Help team reach daily goal 5 times',
+      icon: <Users className="w-8 h-8" />,
+      progress: 60,
+      unlocked: false,
+      rarity: 'rare',
+      points: 300
+    },
+    {
+      id: 'perfect-score',
+      name: 'Perfect Score',
+      description: 'Get 100% quality score on 5 calls',
+      icon: <Star className="w-8 h-8" />,
+      progress: 40,
+      unlocked: false,
+      rarity: 'epic',
+      points: 400
+    },
+    {
+      id: 'hot-streak',
+      name: 'Hot Streak',
+      description: 'Maintain a 7-day streak',
+      icon: <Flame className="w-8 h-8" />,
+      progress: 43,
+      unlocked: false,
+      rarity: 'common',
+      points: 200
+    },
+    {
+      id: 'champion',
+      name: 'BDC Champion',
+      description: 'Finish #1 on monthly leaderboard',
+      icon: <Trophy className="w-8 h-8" />,
+      progress: 0,
+      unlocked: false,
+      rarity: 'legendary',
+      points: 1000
+    }
+  ]
+
+  const rarityColors = {
+    common: 'from-blue-600 to-blue-400',
+    rare: 'from-purple-600 to-purple-400',
+    epic: 'from-yellow-600 to-yellow-400',
+    legendary: 'from-red-500 via-orange-500 to-yellow-500'
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      className="space-y-6"
+    >
+      <h2 className="text-3xl font-bold">Trophy Room</h2>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {achievements.map((achievement) => (
+          <Card 
+            key={achievement.id}
+            className={`bg-black/50 backdrop-blur-sm relative overflow-hidden ${
+              achievement.unlocked 
+                ? `border-2 bg-gradient-to-br ${rarityColors[achievement.rarity]} border-transparent`
+                : 'border-gray-700'
+            }`}
+          >
+            <div className={`absolute inset-0 bg-gradient-to-br ${rarityColors[achievement.rarity]} opacity-10`} />
+            <div className="p-6 relative">
+              <div className={`mb-4 ${achievement.unlocked ? 'text-white' : 'text-gray-500'}`}>
+                {achievement.icon}
+              </div>
+              <h3 className="text-xl font-semibold mb-1">{achievement.name}</h3>
+              <p className="text-sm text-gray-400 mb-3">{achievement.description}</p>
+              <div className="space-y-2">
+                <Progress value={achievement.progress} className="h-2" />
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-500">{achievement.progress}%</span>
+                  <span className="text-purple-400">+{achievement.points} pts</span>
+                </div>
+              </div>
+              {achievement.unlocked && (
+                <div className="absolute top-4 right-4">
+                  <Check className="w-6 h-6 text-green-400" />
+                </div>
+              )}
+            </div>
+          </Card>
+        ))}
+      </div>
+    </motion.div>
+  )
+}
+
+// Garage Section
+function GarageSection({ gameState, setGameState }: any) {
+  const currentCar = CARS.find(car => car.id === gameState.currentCar)
+  const currentTheme = GARAGE_THEMES.find(theme => theme.id === gameState.currentTheme)
+  
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      className="space-y-8"
+    >
+      <h2 className="text-3xl font-bold">My Garage</h2>
+      
+      {/* Garage Display */}
+      <Card className="bg-black/50 border-purple-900/30 backdrop-blur-sm overflow-hidden">
+        <div 
+          className="h-96 relative bg-cover bg-center"
+          style={{ backgroundImage: `url(${currentTheme?.image})` }}
+        >
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
+          {currentCar && (
+            <div className="absolute bottom-0 left-0 right-0 p-8">
+              <img 
+                src={currentCar.image} 
+                alt={currentCar.name}
+                className="w-full max-w-2xl mx-auto rounded-lg shadow-2xl"
+                style={{
+                  filter: gameState.currentUnderglow !== 'rainbow' 
+                    ? `drop-shadow(0 20px 40px ${gameState.currentUnderglow})`
+                    : 'drop-shadow(0 20px 40px #7847ea)'
+                }}
+              />
+            </div>
+          )}
+        </div>
+      </Card>
+
+      {/* Customization Options */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Theme Selector */}
+        <Card className="bg-black/50 border-purple-900/30 backdrop-blur-sm">
+          <div className="p-6">
+            <h3 className="text-xl font-semibold mb-4">Garage Theme</h3>
+            <div className="grid grid-cols-2 gap-3">
+              {GARAGE_THEMES.map(theme => (
+                <button
+                  key={theme.id}
+                  onClick={() => setGameState((prev: GameState) => ({ ...prev, currentTheme: theme.id }))}
+                  className={`p-3 rounded-lg border-2 transition-all ${
+                    gameState.currentTheme === theme.id
+                      ? 'border-purple-500 bg-purple-500/20'
+                      : 'border-gray-700 hover:border-gray-600'
+                  }`}
+                >
+                  {theme.name}
+                </button>
+              ))}
+            </div>
+          </div>
+        </Card>
+
+        {/* Underglow Selector */}
+        <Card className="bg-black/50 border-purple-900/30 backdrop-blur-sm">
+          <div className="p-6">
+            <h3 className="text-xl font-semibold mb-4">Underglow Color</h3>
+            <div className="grid grid-cols-3 gap-3">
+              {UNDERGLOW_COLORS.map(color => (
+                <button
+                  key={color.id}
+                  onClick={() => setGameState((prev: GameState) => ({ ...prev, currentUnderglow: color.color }))}
+                  className={`h-12 rounded-lg border-2 transition-all ${
+                    gameState.currentUnderglow === color.color
+                      ? 'border-white scale-110'
+                      : 'border-gray-700 hover:border-gray-600'
+                  }`}
+                  style={{
+                    background: color.color === 'rainbow' 
+                      ? 'linear-gradient(45deg, #ff0000, #ff8800, #ffff00, #00ff00, #0088ff, #8800ff)'
+                      : color.color
+                  }}
+                />
+              ))}
+            </div>
+          </div>
+        </Card>
+      </div>
+
+      {/* Car Collection */}
+      <div>
+        <h3 className="text-2xl font-semibold mb-4">My Collection</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {CARS.map(car => {
+            const isOwned = gameState.ownedItems.includes(car.id)
+            return (
+              <Card 
+                key={car.id}
+                className={`bg-black/50 border-purple-900/30 backdrop-blur-sm overflow-hidden transition-all hover:scale-[1.02] ${
+                  gameState.currentCar === car.id ? 'ring-2 ring-purple-500' : ''
+                }`}
+              >
+                <div className="relative">
+                  <img 
+                    src={car.image} 
+                    alt={car.name}
+                    className={`w-full h-48 object-cover ${!isOwned ? 'filter grayscale opacity-50' : ''}`}
+                  />
+                  {!isOwned && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/60">
+                      <div className="text-center">
+                        <Settings className="w-12 h-12 text-gray-500 mx-auto mb-2" />
+                        <p className="text-xl font-bold">{car.price.toLocaleString()} pts</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                <div className="p-4">
+                  <h4 className="font-semibold text-lg mb-2">{car.name}</h4>
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-400">Style</span>
+                      <div className="flex gap-1">
+                        {[...Array(5)].map((_, i) => (
+                          <Star 
+                            key={i} 
+                            className={`w-4 h-4 ${i < car.stats.style ? 'text-yellow-500 fill-yellow-500' : 'text-gray-600'}`}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-400">Speed</span>
+                      <div className="flex gap-1">
+                        {[...Array(5)].map((_, i) => (
+                          <Star 
+                            key={i} 
+                            className={`w-4 h-4 ${i < car.stats.speed ? 'text-yellow-500 fill-yellow-500' : 'text-gray-600'}`}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  {isOwned && (
+                    <Button 
+                      onClick={() => setGameState((prev: GameState) => ({ ...prev, currentCar: car.id }))}
+                      variant={gameState.currentCar === car.id ? "default" : "secondary"}
+                      className="w-full mt-3"
+                    >
+                      {gameState.currentCar === car.id ? 'Selected' : 'Select'}
+                    </Button>
+                  )}
+                </div>
+              </Card>
+            )
+          })}
+        </div>
+      </div>
+    </motion.div>
+  )
+}
+
+// Shop Section
+function ShopSection({ gameState, purchaseItem }: any) {
+  const [category, setCategory] = useState('cars')
+  
+  const shopItems = {
+    cars: CARS.filter(car => car.locked && !gameState.ownedItems.includes(car.id)),
+    powerups: [
+      { id: 'power-hour', name: '2X Points (1hr)', price: 500, icon: <Zap className="w-12 h-12" /> },
+      { id: 'instant-challenge', name: 'Complete Challenge', price: 300, icon: <Target className="w-12 h-12" /> },
+      { id: 'fire-starter', name: 'Start On Fire', price: 1000, icon: <Flame className="w-12 h-12" /> }
+    ]
+  }
+  
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      className="space-y-6"
+    >
+      <div className="flex justify-between items-center">
+        <h2 className="text-3xl font-bold">Shop</h2>
+        <Tabs value={category} onValueChange={setCategory}>
+          <TabsList>
+            <TabsTrigger value="cars">Cars</TabsTrigger>
+            <TabsTrigger value="powerups">Power-ups</TabsTrigger>
+          </TabsList>
+        </Tabs>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {category === 'cars' && shopItems.cars.map(car => (
+          <Card key={car.id} className="bg-black/50 border-purple-900/30 backdrop-blur-sm overflow-hidden">
+            <img src={car.image} alt={car.name} className="w-full h-48 object-cover" />
+            <div className="p-6">
+              <h3 className="text-xl font-semibold mb-2">{car.name}</h3>
+              <div className="flex justify-between items-center">
+                <span className="text-2xl font-bold text-purple-400">{car.price.toLocaleString()} pts</span>
+                <Button 
+                  onClick={() => purchaseItem(car.price, car.id)}
+                  disabled={gameState.users[gameState.currentUser].points < car.price}
+                >
+                  Purchase
+                </Button>
+              </div>
+            </div>
+          </Card>
+        ))}
+        
+        {category === 'powerups' && shopItems.powerups.map(item => (
+          <Card key={item.id} className="bg-black/50 border-purple-900/30 backdrop-blur-sm">
+            <div className="p-6 text-center">
+              <div className="mb-4 text-purple-400 flex justify-center">{item.icon}</div>
+              <h3 className="text-xl font-semibold mb-2">{item.name}</h3>
+              <div className="flex justify-between items-center mt-4">
+                <span className="text-2xl font-bold text-purple-400">{item.price} pts</span>
+                <Button 
+                  onClick={() => purchaseItem(item.price, item.id)}
+                  disabled={gameState.users[gameState.currentUser].points < item.price}
+                >
+                  Purchase
+                </Button>
+              </div>
+            </div>
+          </Card>
+        ))}
+      </div>
+    </motion.div>
+  )
+}
+
+// Admin Panel Component
+function AdminPanel({ gameState, setGameState, onClose, addPoints }: any) {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ scale: 0.9 }}
+        animate={{ scale: 1 }}
+        exit={{ scale: 0.9 }}
+        className="bg-gray-900 border border-purple-500 rounded-xl p-6 max-w-lg w-full"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold">Admin Panel</h2>
+          <Button variant="ghost" size="icon" onClick={onClose}>
+            <X className="w-5 h-5" />
+          </Button>
+        </div>
+
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium mb-2">Select User</label>
+            <Select 
+              value={gameState.currentUser} 
+              onValueChange={(value) => setGameState((prev: GameState) => ({ ...prev, currentUser: value }))}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.entries(gameState.users).map(([id, user]) => (
+                  <SelectItem key={id} value={id}>{user.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <Button onClick={() => addPoints(100, 'Admin Bonus!')} variant="secondary">
+              Add 100 Points
+            </Button>
+            <Button onClick={() => addPoints(1000, 'Admin Mega Bonus!')} variant="secondary">
+              Add 1000 Points
+            </Button>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <Button 
+              onClick={() => setGameState((prev: GameState) => ({ ...prev, powerHour: !prev.powerHour }))}
+              variant={gameState.powerHour ? "default" : "secondary"}
+            >
+              {gameState.powerHour ? 'Deactivate' : 'Activate'} Power Hour
+            </Button>
+            <Button 
+              onClick={() => setGameState((prev: GameState) => ({ ...prev, teamBonus: !prev.teamBonus }))}
+              variant={gameState.teamBonus ? "default" : "secondary"}
+            >
+              {gameState.teamBonus ? 'Deactivate' : 'Activate'} Team Bonus
+            </Button>
+          </div>
+
+          <Button 
+            onClick={() => {
+              setGameState((prev: GameState) => ({ 
+                ...prev, 
+                ownedItems: [...new Set([...prev.ownedItems, ...CARS.map(car => car.id)])]
+              }))
+              toast.success('All cars unlocked!')
+            }}
+            className="w-full"
+          >
+            Unlock All Cars
+          </Button>
+        </div>
+      </motion.div>
+    </motion.div>
+  )
+}
