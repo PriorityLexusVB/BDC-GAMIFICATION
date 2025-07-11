@@ -1,0 +1,17 @@
+# Copy this file to .env.local and fill in your values
+
+# API Configuration (if using external API)
+NEXT_PUBLIC_API_URL=https://api.example.com
+
+# Webhook URL for Call Drip integration
+WEBHOOK_SECRET=your_webhook_secret_here
+
+# Database URL (if adding database)
+DATABASE_URL=
+
+# Analytics (optional)
+NEXT_PUBLIC_GA_ID=
+
+# Feature Flags (optional)
+NEXT_PUBLIC_ENABLE_POWER_UPS=true
+NEXT_PUBLIC_ENABLE_TEAM_MODE=true
